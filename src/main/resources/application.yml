@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: ${APP_NAME}
+  kafka:
+    bootstrap-servers: ${KAFKA_URL}
+    consumer:
+      group-id: ${CONSUMER_GROUP}
+
+management:
+  endpoints.web:
+    exposure.include: [health]
+    base-path: /
+    path-mapping:
+      health: healthcheck
+  endpoint.health.show-details: always

@@ -1,0 +1,66 @@
+plugins {
+    id 'org.springframework.boot' version '2.6.6'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+    id 'io.freefair.lombok' version '6.2.0'
+    id 'java'
+}
+
+group = 'com.sinch'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+
+    blackBoxTestImplementation.extendsFrom testImplementation
+}
+
+bootJar {
+    archiveFileName = 'service.jar'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.kafka:spring-kafka'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+    blackBoxTestImplementation 'org.testcontainers:testcontainers:1.16.0'
+    blackBoxTestImplementation 'io.rest-assured:rest-assured:4.2.1'
+    blackBoxTestImplementation 'io.rest-assured:json-path:4.2.1'
+    blackBoxTestImplementation 'io.rest-assured:xml-path:4.2.1'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+
+sourceSets {
+    blackBoxTest {
+        java.srcDirs = ['src/black-box-test/java']
+        resources.srcDir file('src/black-box-test/resources')
+    }
+}
+
+task blackBoxTest(type: Test) {
+    testClassesDirs = sourceSets.blackBoxTest.output.classesDirs
+    classpath = sourceSets.blackBoxTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+    systemProperties(System.getProperties())
+    useJUnitPlatform()
+    systemProperties['user.dir'] = workingDir
+}
+
+blackBoxTest.dependsOn bootJar
